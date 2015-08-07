@@ -1,14 +1,28 @@
 __author__ = 'vegasq'
 
 import copy
-import os
 import pygame
 import random
 import sys
-import time
+from maps import level1
+from maps import level2
+import maps
 
 
-class Worm(object):
+class KeyboardControl(object):
+    def _step(self, gamemap):
+        state = pygame.key.get_pressed()
+        if state[pygame.K_UP] != 0 and self.direction != self.DOWN:
+            self.direction = self.UP
+        elif state[pygame.K_DOWN] != 0 and self.direction != self.UP:
+            self.direction = self.DOWN
+        elif state[pygame.K_LEFT] != 0 and self.direction != self.RIGHT:
+            self.direction = self.LEFT
+        elif state[pygame.K_RIGHT] != 0 and self.direction != self.LEFT:
+            self.direction = self.RIGHT
+
+
+class Worm(KeyboardControl):
     body = [(10, 10)]
     UP = 0
     DOWN = 1
@@ -28,15 +42,7 @@ class Worm(object):
             self.body.append(self.body[-1])
 
     def step(self, gamemap):
-        state = pygame.key.get_pressed()
-        if state[pygame.K_UP] != 0 and self.direction != self.DOWN:
-            self.direction = self.UP
-        elif state[pygame.K_DOWN] != 0 and self.direction != self.UP:
-            self.direction = self.DOWN
-        elif state[pygame.K_LEFT] != 0 and self.direction != self.RIGHT:
-            self.direction = self.LEFT
-        elif state[pygame.K_RIGHT] != 0 and self.direction != self.LEFT:
-            self.direction = self.RIGHT
+        self._step(gamemap)
 
         def go_up(x, y):
             return (x, y - 1)
@@ -65,43 +71,12 @@ class Worm(object):
         else:
             exit()
         del self.body[-1]
-        return player
 
 
 class GameMap(object):
-    gamemap = [
-        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,3,0,0,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    ]
+    gamemap = maps.level1.gamemap
 
-    def __init__(self):
-        global screen
+    def __init__(self, screen):
         self.background = pygame.Surface(screen.get_size())
         self.background = self.background.convert()
         self.background.fill((2, 2, 2))
@@ -150,23 +125,27 @@ class GameMap(object):
                     self.background.blit(text, (r + 20 * r, l + 20 * l))
 
 
+class Game(object):
+    def __init__(self):
+        pygame.init()
+        screen = pygame.display.set_mode((800, 600))
+        pygame.display.set_caption('Worm')
+        pygame.mouse.set_visible(0)
+        clock = pygame.time.Clock()
+
+        player = Worm()
+        gamemap = GameMap(screen)
+
+        while True:
+            player.step(gamemap)
+            gamemap.draw_map(player)
+
+            screen.blit(gamemap.background, (0, 0))
+            pygame.display.flip()
+
+            clock.tick(10)
+            pygame.event.pump()
+
+
 if __name__ == '__main__':
-
-    pygame.init()
-    screen = pygame.display.set_mode((800, 600))
-    pygame.display.set_caption('Worm')
-    pygame.mouse.set_visible(0)
-    clock = pygame.time.Clock()
-
-    player = Worm()
-    gamemap = GameMap()
-
-    while True:
-        player.step(gamemap)
-        gamemap.draw_map(player)
-
-        screen.blit(gamemap.background, (0, 0))
-        pygame.display.flip()
-
-        clock.tick(10)
-        pygame.event.pump()
+    game = Game()
